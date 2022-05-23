@@ -1,9 +1,15 @@
 [package]
 name = "My_first_rusty_game"
 version = "0.1.0"
-authors = ["Piotr Trybowski <piotr.trybowski@boombit.com>"]
+authors = ["Piotr Trybowski <ptrybowski@gmail.com.com>"]
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+bevy = {version = "0.6.1"}
+rand = "0.8.3"
+bevy-inspector-egui = "0.8"
+
+[workspace]
+resolver = "2"
