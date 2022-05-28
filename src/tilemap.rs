@@ -2,19 +2,15 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 use bevy::prelude::*;
 use crate::{ascii::{AsciiSheet, spawn_ascii_sprite}, GameState, MAP_X_SIZE, MAP_Y_SIZE, TILE_SIZE};
+use bevy_inspector_egui::{RegisterInspectable, WorldInspectorPlugin,Inspectable};
 
+
+#[derive(Inspectable, Default)]
 pub struct Lawn{
     pub is_grass: Vec<Vec<bool>>,
 }
 
-impl FromWorld for Lawn {
-    fn from_world(world: &mut World) -> Self {
-        Lawn {
-            is_grass: Vec::new()
 
-        }
-    }
-}
 
 #[derive(Component)]
 pub struct TileCollider;

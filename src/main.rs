@@ -23,7 +23,7 @@ use crate::tilemap::Lawn;
 pub const CLEAR: Color = Color::rgb(0.1,0.1,0.1);
 pub const RESOLUTION: f32 = 16.0/9.0;
 pub const TILE_SIZE: f32 = 0.1;
-pub const TIMESTEP_EVERY_5_SECONDS: f64 = 300.0/15.0;
+pub const TIMESTEP_EVERY_5_SECONDS: f64 = 300.0/60.0;
 pub const MAP_Y_SIZE: usize = 8;
 pub const MAP_X_SIZE: usize = 228;
 

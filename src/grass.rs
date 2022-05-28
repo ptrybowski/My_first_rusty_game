@@ -28,27 +28,35 @@ impl Plugin for GrassPlugin{
                 SystemSet::on_exit(GameState::Overworld)
                     .with_system(hide_grass)
             )
-            .add_stage_after(CoreStage::Update, "grow1",SystemStage::single_threaded())
-            .add_stage_after("grow1", "grow2",SystemStage::single_threaded())
-            .add_stage_after("grow2", "grow3",SystemStage::single_threaded())
-            .add_stage_after("grow3", "grow4",SystemStage::single_threaded())
+            .add_system_set(SystemSet::new()
+                .with_run_criteria(FixedTimestep::step(TIMESTEP_EVERY_5_SECONDS))
+                .with_system(grass_spread_left))
 
-            .add_system_set_to_stage("grow1",SystemSet::new()
+            .add_system_set(SystemSet::new()
                 .with_run_criteria(FixedTimestep::step(TIMESTEP_EVERY_5_SECONDS))
-                .with_system(grass_spread_left.label("grow_left"))
-            )
-            .add_system_set_to_stage("grow2",SystemSet::new()
-                .with_run_criteria(FixedTimestep::step(TIMESTEP_EVERY_5_SECONDS))
-                .with_system(grass_spread_right.label("grow_right"))
-            )
-            .add_system_set_to_stage("grow3",SystemSet::new()
-                .with_run_criteria(FixedTimestep::step(TIMESTEP_EVERY_5_SECONDS))
-                .with_system(grass_spread_up.label("grow_up"))
-            )
-            .add_system_set_to_stage("grow4",SystemSet::new()
-                .with_run_criteria(FixedTimestep::step(TIMESTEP_EVERY_5_SECONDS))
-                .with_system(grass_spread_down.label("grow_down"))
-            )
+                .with_system(grass_update))
+            // .add_stage_after(CoreStage::Update, "grow1",SystemStage::single_threaded())
+            // .add_stage_after("grow1", "grow2",SystemStage::single_threaded())
+            // .add_stage_after("grow2", "grow3",SystemStage::single_threaded())
+            // .add_stage_after("grow3", "grow4",SystemStage::single_threaded())
+            //
+            // .add_system_set_to_stage("grow1",SystemSet::new()
+            //     .with_run_criteria(FixedTimestep::step(TIMESTEP_EVERY_5_SECONDS))
+            //     .with_system(grass_spread_left.label("grow_left"))
+            // )
+            // .add_system_set_to_stage("grow2",SystemSet::new()
+            //     .with_run_criteria(FixedTimestep::step(TIMESTEP_EVERY_5_SECONDS))
+            //     .with_system(grass_spread_right.label("grow_right"))
+            // )
+            // .add_system_set_to_stage("grow3",SystemSet::new()
+            //     .with_run_criteria(FixedTimestep::step(TIMESTEP_EVERY_5_SECONDS))
+            //     .with_system(grass_spread_up.label("grow_up"))
+            // )
+            // .add_system_set_to_stage("grow4",SystemSet::new()
+            //     .with_run_criteria(FixedTimestep::step(TIMESTEP_EVERY_5_SECONDS))
+            //     .with_system(grass_spread_down.label("grow_down"))
+            // )
+
 
         ;}
 }
@@ -110,12 +118,14 @@ fn spawn_grass(mut commands:Commands, ascii:Res<AsciiSheet>){
 fn grass_update(
     mut lawn: ResMut<Lawn>,
     mut commands: Commands,
+    ascii:Res<AsciiSheet>,
+
 
 ){
-    for (x,row) in lawn.enumerate() {
-        for (y, elem) in row.enumerate(){
-            if elem{
-                let mut translation = Vec3::new(-x * TILE_SIZE, y*TILE_SIZE, 0.0);
+    for (x,row) in lawn.is_grass.iter().enumerate() {
+        for (y, elem) in row.iter().enumerate(){
+            if *elem{
+                let mut translation = Vec3::new(-(x as f32)  * TILE_SIZE, y as f32 *TILE_SIZE, 0.0);
                 let grass = spawn_ascii_sprite(
                 &mut commands,
                 &ascii,
@@ -136,9 +146,7 @@ fn grass_update(
 
 fn grass_spread_left(
     mut query: Query<&Grass>,
-    mut commands:Commands,
     wall_query: Query<&Transform, (Without<Player>, With<TileCollider>)>,
-    ascii:Res<AsciiSheet>,
     mut lawn: ResMut<Lawn>
 ) {
     for grass in query.iter() {
@@ -146,21 +154,9 @@ fn grass_spread_left(
 
         if wall_grow_check(target_xr, &wall_query) & double_grow_check(target_xr, &query) {
             let mut translation = grass.position + Vec3::new(-1.0 * TILE_SIZE, 0.0, 0.0);
-            let grass = spawn_ascii_sprite(
-                &mut commands,
-                &ascii,
-                247,
-                Color::rgb(0.0, 1.0, 0.0),
-                translation,
-            );
-            commands
-                .entity(grass)
-                .insert(Name::new("Grass"))
-                .insert(Grass { position: translation })
-                .insert(TileCollider)
-                .id();
+            lawn.is_grass[translation.x as usize ][translation.y as usize] = true
+                }
         }
-    }
 }
 fn grass_spread_right(
     mut query: Query<&Grass>,
